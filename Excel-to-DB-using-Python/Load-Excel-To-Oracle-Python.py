@@ -10,15 +10,16 @@ from tkinter import *
 from tkinter.ttk import *
 import collections
 
- 
-    
+
 
 class Window(Frame):
+    """
+    This Class will show GUI , that list all oracle table column name along side with excel file column name in combo box 
+    """
     arr_val ={}
     tabl_clmn = []
-    sht_name ='DB'
-    tg_tabl = 'CELL_TEMP'
-    #tg_tabl = 'CELL_LOOKUP_TMP'
+    sht_name ='Sheet1' # Enter the sheet name 
+    tg_tabl = 'CELL_TEMP' # type here the oracle table name 
 
     def __init__(self,master=None):
         Frame.__init__(self, master)                 
@@ -36,16 +37,20 @@ class Window(Frame):
         # placing the button on my window
         quitButton.place(x=300, y=0)
         
-        self.db = cx_Oracle.connect('ocdm_test/oraoctest_02@ocdm11g')
+        self.db = cx_Oracle.connect('USER/PASSWORD@DBTNS') # connect to oracle database 
         self.cl = self.db.cursor()
-        self.cl.execute('select /*+ parallel(20) */  column_name from user_tab_columns where table_name = :tb ',tb=self.tg_tabl)
-        df1 = pd.read_excel(r'E:\work\CELLs_CHECK\Lookup_Sep_2019.xlsx', sheet_name=self.sht_name)  
+        self.cl.execute('select /*+ parallel(20) */  column_name from user_tab_columns where table_name = :tb ',tb=self.tg_tabl) # get the list of table columns
+        df1 = pd.read_excel(r'E:\work\Sample_FILE.xlsx', sheet_name=self.sht_name) # open excel file sheet name using pandas  
         #print(df1.columns)
         df_c = []
+        
+        # Here is loop that there create list of the excel file columns names
         for df_clmn in df1.columns:
             df_c.append(df_clmn)
         print(df_c)
 
+        # below is loop over table column names , this loop will create Label , Combobox for Excel/Table Column mapping
+        
         self.combos=[]
         self.labels=[] #creates an empty list for your labels
         for x in self.cl: #iterates over your nums 
@@ -66,17 +71,12 @@ class Window(Frame):
             odr = odr + 1
         self.cl.close()
         self.db.close()
-        print(self.tabl_clmn)
-           
-
         
+    # method for to add selected value from combox box    
     def justamethod (self,eventObject,i):
-        
-        print("method is called")
-        #print (eventObject.get(),eventObject)
         self.arr_val[i]=eventObject.get()
     
-             
+    #Load the data          
     def helloCallBack():   
         print('the button has been selected ')
         sel_clm =Window.tabl_clmn
@@ -89,7 +89,7 @@ class Window(Frame):
             sel_clm2.append(sel_clm[k])
         print(val)
         #val = ['dept','name']
-        dfrm=read_ex(r'E:\work\CELLs_CHECK\Lookup_Sep_2019.xlsx',Window.sht_name)
+        dfrm=read_ex(r'E:\work\Sample_File.xlsx',Window.sht_name)
         print(dfrm.columns)
         static_val ={}#{1:'MyName'} This should be replaced by the static values to be inserted if any 
         ora_table(dfrm,sel_clm2,val,static_val,Window.tg_tabl)
@@ -117,7 +117,7 @@ def read_ex(f_name,sh):   # function to read excel file , and list the value of 
 
 def ora_table(dfrm1,clmns,val1,st_val,tabl):
 
-        db = cx_Oracle.connect('ocdm_test/oraoctest_02@ocdm11g')
+        db = cx_Oracle.connect('USER/PASSWORD@DBTNS')
         cl = db.cursor()
         
   
